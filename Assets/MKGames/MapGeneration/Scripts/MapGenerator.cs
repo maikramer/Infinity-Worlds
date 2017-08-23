@@ -75,7 +75,7 @@ namespace MkGames
 					break;
 
 				case MapDrawMode.FullMap:
-					GenerateFullMap();
+					GenerateFullMap(parameters);
 					break;
 
 				default:
@@ -83,8 +83,9 @@ namespace MkGames
 			}
 		}
 
-		public void GenerateFullMap()
+		public IEnumerator GenerateFullMap()
 		{
+			yield return null;
 			GenerateFullMap(parameters);
 		}
 
@@ -132,7 +133,7 @@ namespace MkGames
 				mapGameObject = new GameObject();
 				mapGameObject.name = MapParentName + " " + mapGameObject.GetInstanceID();
 			}
-			
+
 #if UNITY_EDITOR
 			if (Application.isEditor)
 				EditorCoroutine.Start(ApplyFullMapHeightModifier(fullHeightMap, _parameters, mapGameObject));
@@ -215,6 +216,13 @@ namespace MkGames
 			GenerateMapChunk(Vector3.zero);
 		}
 
+		public GameObject GenerateMapChunk(Vector3 position)
+		{
+			var noiseGen = new Noise();
+			var noiseMap = noiseGen.GenerateFastNoiseMap(parameters, parameters.size, parameters.noisePosition);
+			return GenerateMapChunk(position, parameters, noiseMap);
+		}
+
 		public GameObject GenerateMapChunk(Vector3 position, MapParameters mapParameters, float[,] noiseMap)
 		{
 			var heightMap = Noise.SimplifyNoiseMap(noiseMap, mapParameters.textureResolutionFactor);
@@ -229,25 +237,25 @@ namespace MkGames
 				var simplification = mapParameters.levelOfDetail == 0 ? 1 : mapParameters.levelOfDetail * 2;
 				var simpleHeightMap = Noise.SimplifyNoiseMap(heightMap, simplification);
 				mesh.colors = GenerateMeshColorMap(simpleHeightMap);
-				meshGameObject = MeshGenerator.CreateMeshGameObject(mesh, null);
+				meshGameObject = MeshGenerator.CreateMeshGameObject(mesh, null, null);
 			}
 			else
 			{
 				var texture2D = GenerateTexture(noiseMap);
 				texture2D.filterMode = FilterMode.Point;
-				meshGameObject = MeshGenerator.CreateMeshGameObject(mesh, texture2D);
+				if (mapParameters.useNormalMap)
+				{
+					Texture2D normalMap = TextureGenerator.NormalMap(texture2D, mapParameters.normalMapStrength);
+					meshGameObject = MeshGenerator.CreateMeshGameObject(mesh, texture2D, normalMap);
+				}
+				else
+					meshGameObject = MeshGenerator.CreateMeshGameObject(mesh, texture2D, null);
 			}
 
 			meshGameObject.transform.position = position * mapParameters.mapScale;
 			return meshGameObject;
 		}
 
-		public GameObject GenerateMapChunk(Vector3 position)
-		{
-			var noiseGen = new Noise();
-			var noiseMap = noiseGen.GenerateFastNoiseMap(parameters, parameters.size, parameters.noisePosition);
-			return GenerateMapChunk(position, parameters, noiseMap);
-		}
 
 		private Texture2D GenerateTexture(float[,] heightMap)
 		{
@@ -280,11 +288,34 @@ namespace MkGames
 			for (var x = 0; x < size; x++)
 			for (var y = 0; y < size; y++)
 			{
-				var currentHeight = noiseMap[x, y];
+				var currentHeight = Mathf.Clamp01(noiseMap[x, y]);
 				for (var i = 0; i < terrainTextures.Count; i++)
 					if (currentHeight <= terrainTextures[i].height / 100)
 					{
-						colorMap[y * size + x] = terrainTextures[i].color;
+						var textureHeight = terrainTextures[i].height / 100;
+						float percent;
+						if (i > 0)
+						{
+							var lastTextureHeight = terrainTextures[i - 1].height / 100;
+							percent = (currentHeight - lastTextureHeight) / (textureHeight - lastTextureHeight);
+						}
+						else
+							percent = currentHeight / textureHeight;
+
+
+						var textureColor = terrainTextures[i].color;
+						if (percent > 1 - parameters.colorSmoothing)
+						{
+							var factor = (percent / (1 - parameters.colorSmoothing)) - 1;
+							var nextTextureColor = i < terrainTextures.Count - 1 ? terrainTextures[i + 1].color : terrainTextures[i].color;
+							var debugcolor = Color.Lerp(textureColor, nextTextureColor, factor);
+							colorMap[y * size + x] = debugcolor;
+						}
+						else
+						{
+							colorMap[y * size + x] = textureColor;
+						}
+
 						break;
 					}
 			}
@@ -323,9 +354,10 @@ namespace MkGames
 		public int size;
 		[Header("Noise")] public FastNoise.NoiseType noiseType;
 		public int noiseSeed;
-		[Range(1, 100)] public float noiseScale;
+		[Range(1, 1000)] public float noiseScale;
 		public Vector2 noisePosition;
 		[Header("Colors")] public bool UseMeshColor;
+		[Range(0, 1)] public float colorSmoothing;
 		[Header("Quality")] [Range(0, 6)] public int levelOfDetail;
 		[Range(1, 16)] public int textureResolutionFactor;
 		[HideInInspector] public List<TerrainTextureType> terrainTextures;

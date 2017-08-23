@@ -67,7 +67,7 @@ namespace MkGames
 			return planeMesh;
 		}
 
-		public static GameObject CreateMeshGameObject(Mesh mesh, Texture2D texture2D)
+		public static GameObject CreateMeshGameObject(Mesh mesh, Texture2D mainTexture, Texture2D normalMap)
 		{
 			if (!mesh)
 				new UnityException("Tentando criar um GameObject de uma mesh nula");
@@ -79,12 +79,16 @@ namespace MkGames
 			meshGameObject.GetComponent<MeshFilter>().sharedMesh = mesh;
 			Material material;
 
-			if (!texture2D)
+			if (!mainTexture)
 				material = new Material(Shader.Find("Diffuse Vertex Color"));
 			else
 			{
-				material = new Material(Shader.Find("Standard")) {mainTexture = texture2D};
+				material = new Material(Shader.Find("Standard")) {mainTexture = mainTexture};
 				material.SetFloat("_Glossiness", 0);
+				if (normalMap != null)
+				{
+					material.SetTexture("_BumpMap", normalMap);
+				}
 			}
 
 
