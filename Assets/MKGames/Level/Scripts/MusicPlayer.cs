@@ -4,22 +4,26 @@ using MkGames;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class MusicPlayer : Singleton<MusicPlayer>
 {
-
 	[HideInInspector] public List<AudioTrack> trackList;
 
 	private AudioSource music;
 
-	void OnEnable() {
-	  SceneManager.sceneLoaded += OnSceneLoaded;
+	void OnEnable()
+	{
+		music = GetComponent<AudioSource>();
+		SceneManager.sceneLoaded += OnSceneLoaded;
+		DontDestroyOnLoad(this);
 	}
 
-	void OnDisable() {
-	  SceneManager.sceneLoaded -= OnSceneLoaded;
+	void OnDisable()
+	{
+		SceneManager.sceneLoaded -= OnSceneLoaded;
 	}
 
-	private void OnSceneLoaded (Scene scene, LoadSceneMode mode)
+	private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
 	{
 		music.Stop();
 		foreach (var audioTrack in trackList)
@@ -28,16 +32,18 @@ public class MusicPlayer : Singleton<MusicPlayer>
 			{
 				music.clip = audioTrack.audioClip;
 				music.loop = audioTrack.loop;
+				
+				if (!music.clip)
+					return;
+				
+				if (audioTrack.playAtStart)
+					music.Play();
+				
 				break;
 			}
 		}
-		
-		if (!music.clip)
-			return;
-		
-		music.Play();
 	}
-	
+
 	[Serializable]
 	public struct AudioTrack
 	{

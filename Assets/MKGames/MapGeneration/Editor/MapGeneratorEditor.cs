@@ -10,6 +10,8 @@ namespace MkGames
 		private ReorderableList list;
 
 		private void OnEnable() {
+			var mapGenerator = (MapGenerator) target;
+			mapGenerator.UpdateProfile();
 			list = new ReorderableList(serializedObject, serializedObject.FindProperty("terrainTextures"), true, true, true, true);
 			list.drawElementCallback =  
 				(Rect rect, int index, bool isActive, bool isFocused) => {
@@ -35,11 +37,13 @@ namespace MkGames
 			var mapGenerator = (MapGenerator) target;
 
 			if (DrawDefaultInspector())
-				if (mapGenerator.AutoGenerate && mapGenerator.Override)
+			{
+				if (mapGenerator.AutoGenerate && mapGenerator.OverrideMesh)
 					mapGenerator.GenerateMap();
+			}
 
 			if (GUILayout.Button("Generate"))
-				if (mapGenerator.Override || mapGenerator.mapDrawMode != MapDrawMode.Mesh)
+				if (mapGenerator.OverrideMesh || mapGenerator.mapDrawMode != MapDrawMode.Mesh)
 					mapGenerator.GenerateMap();
 				else
 					mapGenerator.GenerateNewMap();

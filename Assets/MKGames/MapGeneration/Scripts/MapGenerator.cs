@@ -13,15 +13,17 @@ namespace MkGames
 
 		public static string MapParentName = "Map";
 
+		public ScriptableObject mapProfile;
 		public MapDrawMode mapDrawMode;
 		[HideInInspector] public List<TerrainTextureType> terrainTextures;
 		[SerializeField] [HideInInspector] private GameObject terrain;
 		public PhysicMaterial defaultPhysicMaterial;
+		public bool OverrideProfile;
 		public MapParameters parameters;
 		public FullMapParameters fullMapParameters;
 		public bool AddCollider;
 		public bool AutoGenerate;
-		public bool Override;
+		public bool OverrideMesh;
 		public UnityEvent OnMapReady;
 
 		private Noise noiseGen;
@@ -54,7 +56,7 @@ namespace MkGames
 					break;
 
 				case MapDrawMode.Mesh:
-					if (!Override)
+					if (!OverrideMesh)
 						GenerateNewMap();
 					else
 					{
@@ -83,6 +85,8 @@ namespace MkGames
 			}
 		}
 
+		#region FullMapGeneration
+
 		public IEnumerator GenerateFullMap()
 		{
 			yield return null;
@@ -99,7 +103,7 @@ namespace MkGames
 
 			startedGeneration = true;
 
-			if (_parameters.UseMeshColor)
+			if (_parameters.useMeshColor)
 			{
 				_parameters.textureResolutionFactor = 1;
 			}
@@ -121,7 +125,7 @@ namespace MkGames
 		private void GenerateFullMapGameObject(float[,] fullHeightMap, MapParameters _parameters)
 		{
 			GameObject mapGameObject;
-			if (Override)
+			if (OverrideMesh)
 			{
 				mapGameObject = GameObject.Find(MapParentName);
 				if (mapGameObject)
@@ -211,6 +215,10 @@ namespace MkGames
 			Debug.Log("Geracao Finalizada");
 		}
 
+		#endregion
+
+		#region MapGeneration
+
 		public void GenerateNewMap()
 		{
 			GenerateMapChunk(Vector3.zero);
@@ -232,7 +240,7 @@ namespace MkGames
 			mesh.name = "Map Mesh";
 
 			GameObject meshGameObject;
-			if (mapParameters.UseMeshColor)
+			if (mapParameters.useMeshColor)
 			{
 				var simplification = mapParameters.levelOfDetail == 0 ? 1 : mapParameters.levelOfDetail * 2;
 				var simpleHeightMap = Noise.SimplifyNoiseMap(heightMap, simplification);
@@ -256,6 +264,9 @@ namespace MkGames
 			return meshGameObject;
 		}
 
+		#endregion
+
+		#region TextureFunctions
 
 		private Texture2D GenerateTexture(float[,] heightMap)
 		{
@@ -322,6 +333,10 @@ namespace MkGames
 			return colorMap;
 		}
 
+		#endregion
+
+		#region UnityFunctions
+
 		private void OnEnable()
 		{
 			startedGeneration = false;
@@ -337,17 +352,56 @@ namespace MkGames
 
 			if (parameters.baseHeight <= 0)
 				parameters.baseHeight = 1;
+
+			UpdateProfile();
 		}
 
-		public void SortRegions()
+		#endregion
+
+		public void UpdateProfile()
 		{
-			//Array.Sort(regions);
+			if (mapProfile && !OverrideProfile)
+			{
+				var mapProperties = mapProfile as MapProperties;
+				parameters = mapProperties.MapParameters;
+				fullMapParameters = mapProperties.FullMapParameters;
+			}
 		}
 	} // Fim de MapGenerator
+
+	#region Types
 
 	[Serializable]
 	public struct MapParameters
 	{
+		#region Constructors
+
+		public MapParameters(float mapScale, float baseHeight, AnimationCurve heightCurve, int size,
+			FastNoise.NoiseType noiseType, int noiseSeed, float noiseScale, Vector2 noisePosition, bool useMeshColor,
+			float colorSmoothing, int levelOfDetail, int textureResolutionFactor, List<TerrainTextureType> terrainTextures,
+			bool useNormalMap, float normalMapStrength)
+		{
+			if (heightCurve == null) throw new ArgumentNullException(nameof(heightCurve));
+			if (terrainTextures == null) throw new ArgumentNullException(nameof(terrainTextures));
+			this.mapScale = mapScale;
+			this.baseHeight = baseHeight;
+			this.heightCurve = heightCurve;
+			this.size = size;
+			this.noiseType = noiseType;
+			this.noiseSeed = noiseSeed;
+			this.noiseScale = noiseScale;
+			this.noisePosition = noisePosition;
+			this.useMeshColor = useMeshColor;
+			this.colorSmoothing = colorSmoothing;
+			this.levelOfDetail = levelOfDetail;
+			this.textureResolutionFactor = textureResolutionFactor;
+			this.terrainTextures = terrainTextures;
+			this.useNormalMap = useNormalMap;
+			this.normalMapStrength = normalMapStrength;
+		}
+
+		#endregion
+
 		[Header("Dimensions")] [Range(0.1f, 10f)] public float mapScale;
 		[Range(1, 100)] public float baseHeight;
 		public AnimationCurve heightCurve;
@@ -356,7 +410,7 @@ namespace MkGames
 		public int noiseSeed;
 		[Range(1, 1000)] public float noiseScale;
 		public Vector2 noisePosition;
-		[Header("Colors")] public bool UseMeshColor;
+		[Header("Colors")] public bool useMeshColor;
 		[Range(0, 1)] public float colorSmoothing;
 		[Header("Quality")] [Range(0, 6)] public int levelOfDetail;
 		[Range(1, 16)] public int textureResolutionFactor;
@@ -368,6 +422,20 @@ namespace MkGames
 	[Serializable]
 	public struct FullMapParameters
 	{
+		#region Constructors
+
+		public FullMapParameters(int size, AnimationCurve heightCurveX, AnimationCurve heightCurveY)
+		{
+			if (heightCurveX == null) throw new ArgumentNullException(nameof(heightCurveX));
+			if (heightCurveY == null) throw new ArgumentNullException(nameof(heightCurveY));
+			this.size = size;
+			this.heightCurveX = heightCurveX;
+			this.heightCurveY = heightCurveY;
+		}
+
+		#endregion
+
+
 		[Tooltip("Numero de Tiles com tamanho definido em Parameters.size")] public int size;
 		public AnimationCurve heightCurveX;
 		public AnimationCurve heightCurveY;
@@ -407,4 +475,6 @@ namespace MkGames
 		Terrain,
 		FullMap
 	}
+
+	#endregion
 } // Fim do namespace

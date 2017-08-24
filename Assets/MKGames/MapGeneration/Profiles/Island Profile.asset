@@ -1,0 +1,136 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: af5dc114b4be74cdba05ecc0a593915c, type: 3}
+  m_Name: Island Profile
+  m_EditorClassIdentifier: 
+  mapScale: 1
+  baseHeight: 50
+  heightCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: -0.008201599
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.24447227
+      value: 0.011147266
+      inSlope: 0.3359175
+      outSlope: 0.3359175
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.35
+      value: 0.060046136
+      inSlope: 0.81394804
+      outSlope: 0.81394804
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.44974977
+      value: 0.09979545
+      inSlope: 0.9286004
+      outSlope: 0.9286004
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.6590233
+      value: 0.20564617
+      inSlope: 0.39712152
+      outSlope: 0.39712152
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 0.9917984
+      inSlope: 2
+      outSlope: 2
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  size: 241
+  noiseType: 5
+  noiseSeed: 1
+  noiseScale: 50
+  noisePosition: {x: 0, y: 0}
+  useMeshColor: 0
+  colorSmoothing: 0.437
+  levelOfDetail: 0
+  textureResolutionFactor: 2
+  terrainTextures: []
+  useNormalMap: 0
+  normalMapStrength: 0
+  fullMapSize: 2
+  heightCurveX:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0.0004234314
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.16820695
+      value: 0.7579927
+      inSlope: 2.8938055
+      outSlope: 2.8938055
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.7570323
+      value: 0.74298936
+      inSlope: -2.133299
+      outSlope: -2.133299
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
+  heightCurveY:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 2
+      time: 0
+      value: 0.01193884
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.15766178
+      value: 0.666162
+      inSlope: 3.099133
+      outSlope: 3.099133
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.49970612
+      value: 1.0363618
+      inSlope: -0.004941767
+      outSlope: -0.004941767
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 0.7964352
+      value: 0.67621064
+      inSlope: -2.5194883
+      outSlope: -2.5194883
+      tangentMode: 0
+    - serializedVersion: 2
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 0
