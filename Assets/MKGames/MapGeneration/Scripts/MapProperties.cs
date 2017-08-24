@@ -13,7 +13,9 @@ namespace MkGames
 		public AnimationCurve heightCurve = AnimationCurve.Linear(0,0,1,1);
 		public int size = 241;
 		
-		[Header("Noise")] public FastNoise.NoiseType noiseType = FastNoise.NoiseType.SimplexFractal;
+		[Header("Noise")] 
+		public FastNoise.NoiseType noiseType = FastNoise.NoiseType.SimplexFractal;
+		[Range(1, 10)] public int octaves = 1;
 		public int noiseSeed = 1;
 		[Range(1, 1000)] public float noiseScale = 50;
 		public Vector2 noisePosition = new Vector2(0,0);
@@ -43,7 +45,7 @@ namespace MkGames
 		{
 			get
 			{
-				mapParameters = new MapParameters(mapScale, baseHeight, heightCurve, size, noiseType, noiseSeed, 
+				mapParameters = new MapParameters(mapScale, baseHeight, heightCurve, size, noiseType, octaves, noiseSeed, 
 					noiseScale, noisePosition, useMeshColor, colorSmoothing, levelOfDetail, textureResolutionFactor,
 					terrainTextures, useNormalMap, normalMapStrength);
 				

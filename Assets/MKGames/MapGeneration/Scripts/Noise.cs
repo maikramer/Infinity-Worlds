@@ -25,6 +25,7 @@ namespace MkGames
 
 			var frequency = 1 / par.noiseScale;
 			fastNoise.SetFrequency(frequency);
+			fastNoise.SetFractalOctaves(par.octaves);
 			fastNoise.SetNoiseType(par.noiseType);
 
 			float textureResolutionFactor = par.textureResolutionFactor;
@@ -56,6 +57,7 @@ namespace MkGames
 
 			var frequency = 1 / par.noiseScale;
 			fastNoise.SetFrequency(frequency);
+			fastNoise.SetFractalOctaves(par.octaves);
 			fastNoise.SetNoiseType(par.noiseType);
 
 			float textureResolutionFactor = par.textureResolutionFactor;

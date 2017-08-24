@@ -200,7 +200,7 @@ namespace MkGames
 					collider.material = defaultPhysicMaterial;
 				}
 
-				if (y % fullMapParameters.size / 2 == 0)
+				if (y % (fullMapParameters.size / 2) == 0)
 				{
 					progress += 15;
 					Debug.Log("Progresso : " + progress + "%");
@@ -358,6 +358,8 @@ namespace MkGames
 
 		#endregion
 
+		#region Misc
+
 		public void UpdateProfile()
 		{
 			if (mapProfile && !OverrideProfile)
@@ -367,6 +369,9 @@ namespace MkGames
 				fullMapParameters = mapProperties.FullMapParameters;
 			}
 		}
+
+		#endregion
+		
 	} // Fim de MapGenerator
 
 	#region Types
@@ -377,7 +382,7 @@ namespace MkGames
 		#region Constructors
 
 		public MapParameters(float mapScale, float baseHeight, AnimationCurve heightCurve, int size,
-			FastNoise.NoiseType noiseType, int noiseSeed, float noiseScale, Vector2 noisePosition, bool useMeshColor,
+			FastNoise.NoiseType noiseType, int octaves, int noiseSeed, float noiseScale, Vector2 noisePosition, bool useMeshColor,
 			float colorSmoothing, int levelOfDetail, int textureResolutionFactor, List<TerrainTextureType> terrainTextures,
 			bool useNormalMap, float normalMapStrength)
 		{
@@ -388,6 +393,7 @@ namespace MkGames
 			this.heightCurve = heightCurve;
 			this.size = size;
 			this.noiseType = noiseType;
+			this.octaves = octaves;
 			this.noiseSeed = noiseSeed;
 			this.noiseScale = noiseScale;
 			this.noisePosition = noisePosition;
@@ -407,6 +413,7 @@ namespace MkGames
 		public AnimationCurve heightCurve;
 		public int size;
 		[Header("Noise")] public FastNoise.NoiseType noiseType;
+		[Range(1, 10)] public int octaves;
 		public int noiseSeed;
 		[Range(1, 1000)] public float noiseScale;
 		public Vector2 noisePosition;
@@ -477,4 +484,5 @@ namespace MkGames
 	}
 
 	#endregion
+	
 } // Fim do namespace
