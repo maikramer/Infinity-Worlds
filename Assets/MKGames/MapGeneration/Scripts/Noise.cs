@@ -9,6 +9,7 @@ namespace MkGames
 	/// </summary>
 	public class Noise
 	{
+		public UnityAction<int> ProgressBarAddAction;
 		public NoiseEvent OnNoiseIsReady;
 		
 		public Noise()
@@ -65,7 +66,6 @@ namespace MkGames
 			mapSize = mapSize * (int) textureResolutionFactor;
 			var result = new float[mapSize, mapSize];
 
-			int progress = 0;
 			for (var x = 0; x < mapSize; x++)
 			{
 				for (var y = 0; y < mapSize; y++)
@@ -79,13 +79,14 @@ namespace MkGames
 				if (x % 10 == 0)
 					yield return null;
 				
-				if (x % mapSize / 2 == 0)
+				if (x % (mapSize / 2) == 0)
 				{
-					progress += 20;
-					Debug.Log("Progresso : " + progress + "%");
+					ProgressBarAddAction.Invoke(15);
 				}
 			}
-
+			
+			ProgressBarAddAction.Invoke(10);
+			
 			OnNoiseIsReady.Invoke(result, par);
 		}
 		

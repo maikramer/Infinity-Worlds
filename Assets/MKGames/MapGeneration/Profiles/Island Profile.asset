@@ -57,13 +57,14 @@ MonoBehaviour:
     m_RotationOrder: 0
   size: 241
   noiseType: 5
+  octaves: 4
   noiseSeed: 1
-  noiseScale: 50
+  noiseScale: 100
   noisePosition: {x: 0, y: 0}
   useMeshColor: 0
-  colorSmoothing: 0.437
+  colorSmoothing: 0.3
   levelOfDetail: 0
-  textureResolutionFactor: 2
+  textureResolutionFactor: 4
   terrainTextures: []
   useNormalMap: 0
   normalMapStrength: 0

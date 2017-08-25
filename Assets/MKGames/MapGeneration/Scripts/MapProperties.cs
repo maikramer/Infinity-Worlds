@@ -59,7 +59,7 @@ namespace MkGames
 		{
 			get
 			{
-				fullMapParameters = new FullMapParameters(size, heightCurveX, heightCurveY);
+				fullMapParameters = new FullMapParameters(fullMapSize, heightCurveX, heightCurveY);
 				return fullMapParameters;
 			}
 			set { fullMapParameters = value; }

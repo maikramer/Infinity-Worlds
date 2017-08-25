@@ -11,6 +11,7 @@ namespace MkGames
 	{
 		#region Fields
 
+		public UnityAction<int> ProgressBarAddAction;
 		public static string MapParentName = "Map";
 
 		public ScriptableObject mapProfile;
@@ -109,8 +110,10 @@ namespace MkGames
 			}
 
 			noiseGen = new Noise();
-			var fullHeightMapSize = _parameters.size * fullMapParameters.size * _parameters.textureResolutionFactor;
+			var fullHeightMapSize = _parameters.size * fullMapParameters.fullMapSize * _parameters.textureResolutionFactor;
 			noiseGen.OnNoiseIsReady.AddListener(GenerateFullMapGameObject);
+			noiseGen.ProgressBarAddAction = ProgressBarAddAction;
+			
 
 #if UNITY_EDITOR
 			if (Application.isEditor)
@@ -151,8 +154,7 @@ namespace MkGames
 		private IEnumerator ApplyFullMapHeightModifier(float[,] fullHeightMap, MapParameters _parameters,
 			GameObject fullMap)
 		{
-			var progress = 40;
-			var fullHeightMapSize = _parameters.size * fullMapParameters.size * _parameters.textureResolutionFactor;
+			var fullHeightMapSize = _parameters.size * fullMapParameters.fullMapSize * _parameters.textureResolutionFactor;
 			for (int y = 0; y < fullHeightMapSize; y++)
 			{
 				for (int x = 0; x < fullHeightMapSize; x++)
@@ -165,10 +167,9 @@ namespace MkGames
 				if (y % 10 == 0)
 					yield return null;
 
-				if (y % fullHeightMapSize / 2 == 0)
+				if (y % (fullHeightMapSize / 3) == 0)
 				{
-					progress += 15;
-					Debug.Log("Progresso : " + progress + "%");
+					ProgressBarAddAction(10);
 				}
 			}
 
@@ -184,10 +185,9 @@ namespace MkGames
 
 		private IEnumerator GenerateMapChunks(float[,] fullHeightMap, MapParameters _parameters, GameObject fullMap)
 		{
-			int progress = 70;
-			for (int y = 0; y < fullMapParameters.size; y++)
+			for (int y = 0; y < fullMapParameters.fullMapSize; y++)
 			{
-				for (int x = 0; x < fullMapParameters.size; x++)
+				for (int x = 0; x < fullMapParameters.fullMapSize; x++)
 				{
 					var position = new Vector2Int(x * (_parameters.size - 1), y * (_parameters.size - 1));
 					var heightMap = Noise.SliceNoiseMap(fullHeightMap, position * _parameters.textureResolutionFactor,
@@ -199,16 +199,23 @@ namespace MkGames
 					var collider = mapChunk.AddComponent<MeshCollider>();
 					collider.material = defaultPhysicMaterial;
 				}
-
-				if (y % (fullMapParameters.size / 2) == 0)
+				
+				if (fullMapParameters.fullMapSize > 1)
 				{
-					progress += 15;
-					Debug.Log("Progresso : " + progress + "%");
+					if (y % (fullMapParameters.fullMapSize / 2) == 0)
+					{
+						ProgressBarAddAction(15);
+						yield return null;
+					}
+				}
+				else
+				{
+					ProgressBarAddAction(30);
 					yield return null;
 				}
 			}
 
-			var fullMapSize = (_parameters.size - 1) * fullMapParameters.size * _parameters.mapScale;
+			var fullMapSize = (_parameters.size - 1) * fullMapParameters.fullMapSize * _parameters.mapScale;
 			fullMap.transform.position = new Vector3(-fullMapSize / 2, 0, -fullMapSize / 2);
 			startedGeneration = false;
 			OnMapReady.Invoke();
@@ -371,18 +378,18 @@ namespace MkGames
 		}
 
 		#endregion
-		
 	} // Fim de MapGenerator
 
 	#region Types
-
+	
 	[Serializable]
 	public struct MapParameters
 	{
 		#region Constructors
 
 		public MapParameters(float mapScale, float baseHeight, AnimationCurve heightCurve, int size,
-			FastNoise.NoiseType noiseType, int octaves, int noiseSeed, float noiseScale, Vector2 noisePosition, bool useMeshColor,
+			FastNoise.NoiseType noiseType, int octaves, int noiseSeed, float noiseScale, Vector2 noisePosition,
+			bool useMeshColor,
 			float colorSmoothing, int levelOfDetail, int textureResolutionFactor, List<TerrainTextureType> terrainTextures,
 			bool useNormalMap, float normalMapStrength)
 		{
@@ -431,11 +438,11 @@ namespace MkGames
 	{
 		#region Constructors
 
-		public FullMapParameters(int size, AnimationCurve heightCurveX, AnimationCurve heightCurveY)
+		public FullMapParameters(int fullMapSize, AnimationCurve heightCurveX, AnimationCurve heightCurveY)
 		{
 			if (heightCurveX == null) throw new ArgumentNullException(nameof(heightCurveX));
 			if (heightCurveY == null) throw new ArgumentNullException(nameof(heightCurveY));
-			this.size = size;
+			this.fullMapSize = fullMapSize;
 			this.heightCurveX = heightCurveX;
 			this.heightCurveY = heightCurveY;
 		}
@@ -443,7 +450,7 @@ namespace MkGames
 		#endregion
 
 
-		[Tooltip("Numero de Tiles com tamanho definido em Parameters.size")] public int size;
+		[Tooltip("Numero de Tiles com tamanho definido em Parameters.size")] public int fullMapSize;
 		public AnimationCurve heightCurveX;
 		public AnimationCurve heightCurveY;
 	}
@@ -484,5 +491,4 @@ namespace MkGames
 	}
 
 	#endregion
-	
 } // Fim do namespace

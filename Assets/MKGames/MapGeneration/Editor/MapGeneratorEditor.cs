@@ -7,14 +7,22 @@ namespace MkGames
 	[CustomEditor(typeof(MapGenerator))]
 	public class MapGeneratorEditor : Editor
 	{
+		private const int progressBarHeight = 30;
+		private bool drawProgressBar;
+		private float progress;
 		private ReorderableList list;
 
 		private void OnEnable() {
 			var mapGenerator = (MapGenerator) target;
+			mapGenerator.ProgressBarAddAction = AddToProgressBar;
+			mapGenerator.OnMapReady.AddListener(HideProgressBar);
 			mapGenerator.UpdateProfile();
+
+			HideProgressBar();
+			
 			list = new ReorderableList(serializedObject, serializedObject.FindProperty("terrainTextures"), true, true, true, true);
 			list.drawElementCallback =  
-				(Rect rect, int index, bool isActive, bool isFocused) => {
+				(rect, index, isActive, isFocused) => {
 					var element = list.serializedProperty.GetArrayElementAtIndex(index);
 					rect.y += 2;
 					EditorGUI.PropertyField(
@@ -27,7 +35,7 @@ namespace MkGames
 						new Rect(rect.x + rect.width - 30, rect.y, 30, EditorGUIUtility.singleLineHeight),
 						element.FindPropertyRelative("color"), GUIContent.none);
 				};
-			list.drawHeaderCallback = (Rect rect) => {  
+			list.drawHeaderCallback = rect => {  
 				EditorGUI.LabelField(rect, "Terrain Textures");
 			};
 		}
@@ -43,14 +51,46 @@ namespace MkGames
 			}
 
 			if (GUILayout.Button("Generate"))
+			{
 				if (mapGenerator.OverrideMesh || mapGenerator.mapDrawMode != MapDrawMode.Mesh)
 					mapGenerator.GenerateMap();
 				else
 					mapGenerator.GenerateNewMap();
+				
+				progress = 0;
+				drawProgressBar = true;
+			}
+
+			
+			if (drawProgressBar)
+				DrawProgressBar();
 			
 			serializedObject.Update();
 			list.DoLayoutList();
 			serializedObject.ApplyModifiedProperties();
+			
+			
+		}
+
+		public void DrawProgressBar()
+		{
+			var rect = EditorGUILayout.BeginVertical();
+			GUILayout.Space(progressBarHeight + 10);
+			EditorGUI.ProgressBar(new Rect(rect.x, rect.y + 5, rect.width - 4, progressBarHeight), progress, "Gerando Mapa");
+			EditorGUILayout.EndVertical();
+		}
+
+		public void HideProgressBar()
+		{
+			drawProgressBar = false;
+		}
+
+		public void AddToProgressBar(int value)
+		{
+			progress += (float) value / 100;
+			Repaint();
 		}
 	} // Fim de MapGeneratorEditor
+	
+	
 } // Fim do namespace
