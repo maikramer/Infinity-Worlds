@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,13 +7,14 @@ using UnityEngine.Events;
 namespace MkGames
 {
 	[ExecuteInEditMode]
+	[RequireComponent(typeof(MapDisplay))]
 	public class MapGenerator : MonoBehaviour
 	{
 		#region Fields
-
-		public UnityAction<int> ProgressBarAddAction;
+		public const string MapTag = "Map";
 		public static string MapParentName = "Map";
 
+		public UnityAction<int> ProgressBarAddAction;
 		public ScriptableObject mapProfile;
 		public MapDrawMode mapDrawMode;
 		[HideInInspector] public List<TerrainTextureType> terrainTextures;
@@ -78,7 +79,7 @@ namespace MkGames
 					break;
 
 				case MapDrawMode.FullMap:
-					GenerateFullMap(parameters);
+					GenerateFullMap(parameters, fullMapParameters);
 					break;
 
 				default:
@@ -88,10 +89,51 @@ namespace MkGames
 
 		#region FullMapGeneration
 
-		public IEnumerator GenerateFullMap()
+		public void GenerateFullMap()
 		{
-			yield return null;
-			GenerateFullMap(parameters);
+			GenerateFullMap(parameters, fullMapParameters);
+		}
+
+		public void GenerateFullMap(MapParameters mapParameters, FullMapParameters fullMapParameters)
+		{
+			if (startedGeneration)
+			{
+				Debug.LogError("Geracao ja iniciada, aguarde");
+				return;
+			}
+			
+			if (mapParameters.useMeshColor)
+			{
+				mapParameters.textureResolutionFactor = 1;
+			}
+			
+			GameObject mapGameObject;
+			if (OverrideMesh)
+			{
+				mapGameObject = GameObject.Find(MapParentName);
+				if (mapGameObject)
+					DestroyImmediate(mapGameObject);
+				mapGameObject = new GameObject(MapParentName);
+			}
+			else
+			{
+				mapGameObject = new GameObject();
+				mapGameObject.name = MapParentName + " " + mapGameObject.GetInstanceID();
+			}
+
+			var fullMapGenerator = mapGameObject.AddComponent<FullMapGenerator>();
+			fullMapGenerator.ProgressBarAddAction = ProgressBarAddAction;
+			fullMapGenerator.SetGenerator(mapParameters, fullMapParameters);
+			fullMapGenerator.StartGeneration();
+			
+			startedGeneration = true;
+		}
+
+		public void EndOfFullMapGeneration()
+		{
+			startedGeneration = false;
+			OnMapReady.Invoke();
+			Debug.Log("Geracao Finalizada");
 		}
 
 		public void GenerateFullMap(MapParameters _parameters)
@@ -111,9 +153,9 @@ namespace MkGames
 
 			noiseGen = new Noise();
 			var fullHeightMapSize = _parameters.size * fullMapParameters.fullMapSize * _parameters.textureResolutionFactor;
-			noiseGen.OnNoiseIsReady.AddListener(GenerateFullMapGameObject);
+			//noiseGen.OnNoiseIsReady.AddListener(GenerateFullMapGameObject);
 			noiseGen.ProgressBarAddAction = ProgressBarAddAction;
-			
+
 
 #if UNITY_EDITOR
 			if (Application.isEditor)
@@ -152,7 +194,7 @@ namespace MkGames
 		}
 
 		private IEnumerator ApplyFullMapHeightModifier(float[,] fullHeightMap, MapParameters _parameters,
-			GameObject fullMap)
+			GameObject fullMapGameObject)
 		{
 			var fullHeightMapSize = _parameters.size * fullMapParameters.fullMapSize * _parameters.textureResolutionFactor;
 			for (int y = 0; y < fullHeightMapSize; y++)
@@ -175,15 +217,15 @@ namespace MkGames
 
 #if UNITY_EDITOR
 			if (Application.isEditor)
-				EditorCoroutine.Start(GenerateMapChunks(fullHeightMap, _parameters, fullMap));
+				EditorCoroutine.Start(GenerateMapChunks(fullHeightMap, _parameters, fullMapGameObject));
 			else
-				StartCoroutine(GenerateMapChunks(fullHeightMap, _parameters, fullMap));
+				StartCoroutine(GenerateMapChunks(fullHeightMap, _parameters, fullMapGameObject));
 #else
 			StartCoroutine(GenerateMapChunks(fullHeightMap, _parameters, fullMap));
 #endif
 		}
 
-		private IEnumerator GenerateMapChunks(float[,] fullHeightMap, MapParameters _parameters, GameObject fullMap)
+		private IEnumerator GenerateMapChunks(float[,] fullHeightMap, MapParameters _parameters, GameObject fullMapGameObject)
 		{
 			for (int y = 0; y < fullMapParameters.fullMapSize; y++)
 			{
@@ -193,13 +235,13 @@ namespace MkGames
 					var heightMap = Noise.SliceNoiseMap(fullHeightMap, position * _parameters.textureResolutionFactor,
 						_parameters.size * _parameters.textureResolutionFactor);
 					var mapChunk = GenerateMapChunk(new Vector3(position.x, 0, position.y), _parameters, heightMap);
-					mapChunk.transform.parent = fullMap.transform;
-					mapChunk.tag = "Map";
+					mapChunk.transform.parent = fullMapGameObject.transform;
+					mapChunk.tag = MapTag;
 					if (!AddCollider) continue;
 					var collider = mapChunk.AddComponent<MeshCollider>();
 					collider.material = defaultPhysicMaterial;
 				}
-				
+
 				if (fullMapParameters.fullMapSize > 1)
 				{
 					if (y % (fullMapParameters.fullMapSize / 2) == 0)
@@ -216,7 +258,7 @@ namespace MkGames
 			}
 
 			var fullMapSize = (_parameters.size - 1) * fullMapParameters.fullMapSize * _parameters.mapScale;
-			fullMap.transform.position = new Vector3(-fullMapSize / 2, 0, -fullMapSize / 2);
+			fullMapGameObject.transform.position = new Vector3(-fullMapSize / 2, 0, -fullMapSize / 2);
 			startedGeneration = false;
 			OnMapReady.Invoke();
 			Debug.Log("Geracao Finalizada");
@@ -282,7 +324,7 @@ namespace MkGames
 			return TextureGenerator.TextureFromColorMap(colorMap, textureSize, textureSize);
 		}
 
-		private Color[] GenerateMeshColorMap(float[,] noiseMap)
+		public Color[] GenerateMeshColorMap(float[,] noiseMap)
 		{
 			int size = noiseMap.GetLength(0);
 			var colorMap = new Color[size * size];
@@ -300,7 +342,7 @@ namespace MkGames
 			return colorMap;
 		}
 
-		private Color[] GenerateColorMap(float[,] noiseMap, int size)
+		public Color[] GenerateColorMap(float[,] noiseMap, int size)
 		{
 			var colorMap = new Color[size * size];
 			for (var x = 0; x < size; x++)
@@ -349,9 +391,28 @@ namespace MkGames
 			startedGeneration = false;
 		}
 
+		private void Start()
+		{
+			if (GameObject.FindGameObjectWithTag(MapTag))
+			{
+				OnMapReady.Invoke();
+			}
+		}
+
 
 		private void OnValidate()
 		{
+			//Nao Permite que uma altura da lista de textura seja maior do que a textura seguinte
+			for (int i = 0; i < terrainTextures.Count - 1; i++)
+			{
+				if (terrainTextures[i].height > terrainTextures[i + 1].height)
+				{
+					var tempTT = terrainTextures[i];
+					tempTT.height = terrainTextures[i + 1].height;
+					terrainTextures[i] = tempTT;
+				}
+			}
+
 			parameters.terrainTextures = new List<TerrainTextureType>(terrainTextures);
 
 			if (parameters.textureResolutionFactor <= 0)
@@ -381,15 +442,14 @@ namespace MkGames
 	} // Fim de MapGenerator
 
 	#region Types
-	
+
 	[Serializable]
 	public struct MapParameters
 	{
 		#region Constructors
 
-		public MapParameters(float mapScale, float baseHeight, AnimationCurve heightCurve, int size,
-			FastNoise.NoiseType noiseType, int octaves, int noiseSeed, float noiseScale, Vector2 noisePosition,
-			bool useMeshColor,
+		public MapParameters(float mapScale, float baseHeight, AnimationCurve heightCurve, int size, FastNoise.NoiseType noiseType,
+			int octaves, float lacunarity, int noiseSeed, float noiseScale, Vector2 noisePosition, bool useMeshColor,
 			float colorSmoothing, int levelOfDetail, int textureResolutionFactor, List<TerrainTextureType> terrainTextures,
 			bool useNormalMap, float normalMapStrength)
 		{
@@ -401,6 +461,7 @@ namespace MkGames
 			this.size = size;
 			this.noiseType = noiseType;
 			this.octaves = octaves;
+			this.lacunarity = lacunarity;
 			this.noiseSeed = noiseSeed;
 			this.noiseScale = noiseScale;
 			this.noisePosition = noisePosition;
@@ -421,6 +482,7 @@ namespace MkGames
 		public int size;
 		[Header("Noise")] public FastNoise.NoiseType noiseType;
 		[Range(1, 10)] public int octaves;
+		[Range(0.1f, 5)] public float lacunarity;
 		public int noiseSeed;
 		[Range(1, 1000)] public float noiseScale;
 		public Vector2 noisePosition;

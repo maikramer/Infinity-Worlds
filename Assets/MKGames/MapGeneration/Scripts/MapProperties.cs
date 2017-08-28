@@ -15,9 +15,10 @@ namespace MkGames
 		
 		[Header("Noise")] 
 		public FastNoise.NoiseType noiseType = FastNoise.NoiseType.SimplexFractal;
-		[Range(1, 10)] public int octaves = 1;
+		[Range(1, 10)] public int octaves = 3;
+		[Range(0.1f, 5)] public float lacunarity = 2.0f;
 		public int noiseSeed = 1;
-		[Range(1, 1000)] public float noiseScale = 50;
+		[Range(1, 1000)] public float noiseScale = 100;
 		public Vector2 noisePosition = new Vector2(0,0);
 		
 		[Header("Colors")] 
@@ -25,7 +26,7 @@ namespace MkGames
 		[Range(0, 1)] public float colorSmoothing = 0.2f;
 		
 		[Header("Quality")] 
-		[Range(0, 6)] public int levelOfDetail = 0;
+		[Range(0, 6)] public int levelOfDetail;
 		[Range(1, 16)] public int textureResolutionFactor = 2;
 		[HideInInspector] public List<TerrainTextureType> terrainTextures = new List<TerrainTextureType>();
 		
@@ -45,7 +46,7 @@ namespace MkGames
 		{
 			get
 			{
-				mapParameters = new MapParameters(mapScale, baseHeight, heightCurve, size, noiseType, octaves, noiseSeed, 
+				mapParameters = new MapParameters(mapScale, baseHeight, heightCurve, size, noiseType, octaves, lacunarity, noiseSeed, 
 					noiseScale, noisePosition, useMeshColor, colorSmoothing, levelOfDetail, textureResolutionFactor,
 					terrainTextures, useNormalMap, normalMapStrength);
 				

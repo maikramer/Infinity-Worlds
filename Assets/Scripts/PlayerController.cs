@@ -6,7 +6,7 @@ namespace MkGames
 {
 	public class PlayerController : MonoBehaviour {
 
-		private const string MapTag = "Map";
+		private const string MapTag = MapGenerator.MapTag;
 		public Transform CameraTransform;
 		public int ForceStrengh;
 		[SerializeField] private float _startDelay;

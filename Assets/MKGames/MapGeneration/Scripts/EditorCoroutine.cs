@@ -39,4 +39,17 @@ namespace MkGames
 		}
 	}//EditorCoroutine
 }//MkGames
+
+#else
+
+namespace MkGames
+{
+	public class EditorCoroutine {
+		public static void Start( IEnumerator _routine )
+		{
+			return;
+		}
+	}//EditorCoroutine
+}//MkGames
+
 #endif

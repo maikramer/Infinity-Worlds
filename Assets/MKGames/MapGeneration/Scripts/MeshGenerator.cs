@@ -76,9 +76,13 @@ namespace MkGames
 			meshGameObject.AddComponent<MeshFilter>();
 			meshGameObject.AddComponent<MeshRenderer>();
 			meshGameObject.name = "Map Chunk " + meshGameObject.GetInstanceID();
-			meshGameObject.GetComponent<MeshFilter>().sharedMesh = mesh;
+			
+			if (Application.isPlaying)
+				meshGameObject.GetComponent<MeshFilter>().mesh = mesh;
+			else
+				meshGameObject.GetComponent<MeshFilter>().sharedMesh = mesh;
+			
 			Material material;
-
 			if (!mainTexture)
 				material = new Material(Shader.Find("Diffuse Vertex Color"));
 			else
@@ -104,10 +108,12 @@ namespace MkGames
 		public Vector2[] uvs;
 		public Vector3[] vertices;
 		public Vector3[] normals;
+		public int size;
 
 
 		public MeshData(int size)
 		{
+			this.size = size;
 			vertices = new Vector3[size * size];
 			normals = new Vector3[vertices.Length];
 			triangles = new int[(size - 1) * (size - 1) * 6];
@@ -136,6 +142,56 @@ namespace MkGames
 			normals[c] = triangleNormal;
 		}
 
+
+		//BROKEN
+		public MeshData SliceMeshData(Vector2Int position, int segments)
+		{
+			var meshSize = (int) size / segments;
+			var meshData = new MeshData(meshSize);
+			var meshVertices = new Vector3[meshSize * meshSize];
+			for (int i = 0; i < meshSize; i++)
+			{
+				int vertexLin = size * i + position.x;
+				for (int j = 0; j < meshSize; j++)
+				{
+					var vertexCol = vertexLin + j;
+					var vertexIndex = vertexLin * vertexCol;
+					meshVertices[i * meshSize + j] = vertices[vertexIndex];
+				}
+			}
+			var meshNormals = new Vector3[meshVertices.Length];
+			var meshTriangles = new int[(meshSize - 1) * (meshSize - 1) * 6];
+			var meshUvs = new Vector2[meshSize * meshSize];
+
+			meshData.vertices = meshVertices;
+			meshData.normals = meshNormals;
+			meshData.triangles = meshTriangles;
+			meshData.uvs = meshUvs;
+			return meshData;
+		}
+
+		//NAO TESTADO
+		public static Vector3[] CalculateNormals(Vector3[] vertices, int[] triangles)
+		{
+			Vector3[] normals = new Vector3[vertices.Length];
+			var triangleCount = triangles.Length / 3;
+			for (int i = 0; i < triangleCount; i++)
+			{
+				var vertexIndex = i * 3;
+				var vertexA = vertices[triangles[vertexIndex]];
+				var vertexB = vertices[triangles[vertexIndex + 1]];
+				var vertexC = vertices[triangles[vertexIndex + 2]];
+				var vectorAB = vertexB - vertexA;
+				var vectorAC = vertexC - vertexA;
+				var triangleNormal = Vector3.Cross(vectorAB, vectorAC).normalized;
+				normals[triangles[vertexIndex]] = triangleNormal;
+				normals[triangles[vertexIndex + 1]] = triangleNormal;
+				normals[triangles[vertexIndex + 2]] = triangleNormal;
+			}
+
+			return normals;
+		}
+
 		public void CalculateNormals()
 		{
 			var triangleCount = triangles.Length / 3;
@@ -153,6 +209,7 @@ namespace MkGames
 				normals[triangles[vertexIndex + 2]] = triangleNormal;
 			}
 		}
+
 
 		public Mesh CreateMesh()
 		{

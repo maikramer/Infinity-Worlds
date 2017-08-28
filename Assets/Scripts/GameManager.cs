@@ -20,7 +20,7 @@ namespace MkGames
 
 			if (GameObject.Find(MapGenerator.MapParentName) == null)
 			{
-				StartCoroutine(_mapGenerator.GenerateFullMap());
+				_mapGenerator.GenerateFullMap();
 				_mapGenerator.OnMapReady.AddListener(MapIsReady);
 			}
 		}

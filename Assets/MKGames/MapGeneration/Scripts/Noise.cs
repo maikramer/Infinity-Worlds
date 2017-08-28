@@ -59,6 +59,7 @@ namespace MkGames
 			var frequency = 1 / par.noiseScale;
 			fastNoise.SetFrequency(frequency);
 			fastNoise.SetFractalOctaves(par.octaves);
+			fastNoise.SetFractalLacunarity(par.lacunarity);
 			fastNoise.SetNoiseType(par.noiseType);
 
 			float textureResolutionFactor = par.textureResolutionFactor;
@@ -76,7 +77,7 @@ namespace MkGames
 					result[x, y] = (noiseHeight + 1)/2;
 				}
 
-				if (x % 10 == 0)
+				if (x % 100 == 0)
 					yield return null;
 				
 				if (x % (mapSize / 2) == 0)
@@ -87,7 +88,7 @@ namespace MkGames
 			
 			ProgressBarAddAction.Invoke(10);
 			
-			OnNoiseIsReady.Invoke(result, par);
+			OnNoiseIsReady.Invoke(result);
 		}
 		
 		public static float[,] SliceNoiseMap(float[,] noiseMap, Vector2Int position, int size)
@@ -119,5 +120,5 @@ namespace MkGames
 		}
 	} // Fim de Noise
 
-	public class NoiseEvent : UnityEvent<float[,], MapParameters>{}
+	public class NoiseEvent : UnityEvent<float[,]>{}
 } // Fim do namespace

@@ -9,63 +9,39 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: af5dc114b4be74cdba05ecc0a593915c, type: 3}
-  m_Name: Island Profile
+  m_Name: Low Poly
   m_EditorClassIdentifier: 
-  mapScale: 1
+  mapScale: 3
   baseHeight: 50
   heightCurve:
     serializedVersion: 2
     m_Curve:
     - serializedVersion: 2
       time: 0
-      value: -0.008201599
+      value: 0
       inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 0.24447227
-      value: 0.011147266
-      inSlope: 0.3359175
-      outSlope: 0.3359175
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 0.35
-      value: 0.060046136
-      inSlope: 0.81394804
-      outSlope: 0.81394804
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 0.44974977
-      value: 0.09979545
-      inSlope: 0.9286004
-      outSlope: 0.9286004
-      tangentMode: 0
-    - serializedVersion: 2
-      time: 0.6590233
-      value: 0.20564617
-      inSlope: 0.39712152
-      outSlope: 0.39712152
+      outSlope: 1
       tangentMode: 0
     - serializedVersion: 2
       time: 1
-      value: 0.9917984
-      inSlope: 2
-      outSlope: 2
+      value: 1
+      inSlope: 1
+      outSlope: 0
       tangentMode: 0
     m_PreInfinity: 2
     m_PostInfinity: 2
-    m_RotationOrder: 0
+    m_RotationOrder: 4
   size: 241
   noiseType: 5
-  octaves: 4
-  lacunarity: 2
+  octaves: 3
+  lacunarity: 0.1
   noiseSeed: 1
-  noiseScale: 150
+  noiseScale: 100
   noisePosition: {x: 0, y: 0}
   useMeshColor: 0
-  colorSmoothing: 0.3
+  colorSmoothing: 0.2
   levelOfDetail: 0
-  textureResolutionFactor: 4
+  textureResolutionFactor: 2
   terrainTextures: []
   useNormalMap: 0
   normalMapStrength: 0
